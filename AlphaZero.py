@@ -28,7 +28,6 @@ class AlphaZero:
             memory.append((neutral_state, action_probs, player))
 
             #this is a hyper-parameter to add randomness into the action chosen to play by the AI
-            #GENUIS CODE, THE PROBS ARE = 1 SO TAKING THE ROOT OF IT DOESNT CHANGE THE TOTAL PROBS
             temperature_action_probs = action_probs ** (1 / self.args['temperature'])
 
             action = numpy.random.choice(self.game.action_size, p=(temperature_action_probs / numpy.sum(temperature_action_probs)))
