@@ -1,16 +1,29 @@
 import TicTacToe
 import MCTS
 import numpy
+import ResNet
+import torch
 
 game = TicTacToe.TicTacToe()
 player = 1
 
 args = {
-    'C': 1.41,
-    'num_searches': 100
+    'C' : 2,
+    'num_searches': 60,
+    'num_iterations': 3,
+    'num_selfPlay_iterations': 500,
+    'num_epochs': 4,
+    'batch_size': 64,
+    'temperature' : 1.25,
+    'dirichlet_epsilon': 0.25,
+    'dirichlet_alpha': 0.3
 }
 
-mcts = MCTS.MCTS(game,args)
+model = ResNet.ResNet(game, 4, 64)
+model.load_state_dict(torch.load('/Users/vigyansahai/Code/AlphaZeroCopy/Data/model_2.pt'))
+model.eval()
+
+mcts = MCTS.MCTS(game,args,model)
 
 
 state = game.get_intial_state()
