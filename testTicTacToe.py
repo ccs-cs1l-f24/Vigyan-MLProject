@@ -8,6 +8,8 @@ game = TicTacToe.TicTacToe()
 player = 1
 
 args = {
+    'num_resBlocks': 4,
+    'num_hidden': 64,
     'C' : 2,
     'num_searches': 60,
     'num_iterations': 3,
@@ -22,7 +24,7 @@ args = {
 
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
-model = ResNet.ResNet(game, 4, 64, device=device)
+model = ResNet.ResNet(game, args['num_resBlocks'], args['num_hidden'], device=device)
 model.load_state_dict(torch.load(args['trained_model'],map_location=device))
 model.eval()
 

@@ -1,4 +1,4 @@
-import TicTacToe
+import Cycles
 import MCTSParallel
 import numpy
 import ResNet
@@ -9,7 +9,7 @@ import torch.nn.functional
 from tqdm import trange
 
 class AlphaZeroParallel:
-    def __init__(self, model, optimizer, game: TicTacToe.TicTacToe, args):
+    def __init__(self, model, optimizer, game: Cycles.Cycles, args):
         self.model = model
         self.optimizer = optimizer
         self.game = game
@@ -23,7 +23,7 @@ class AlphaZeroParallel:
         
         while len(spGames) > 0:
             states = numpy.stack([spg.state for spg in spGames])
-            
+             
             neutral_states = self.game.change_perspective(states, player)
             self.mcts.search(neutral_states, spGames)
             
@@ -106,7 +106,7 @@ class AlphaZeroParallel:
             for epoch in trange(self.args['num_epochs']):
                 self.train(memory)
             
-            directory = self.args['directory']
+            directory = "/Users/vigyansahai/Code/AlphaZeroCopy/Data"
             torch.save(self.model.state_dict(), directory+"/"+f"model_{iteration}_{self.game}.pt")
             torch.save(self.optimizer.state_dict(), directory+"/"+f"optimizer_{iteration}_{self.game}.pt")
             

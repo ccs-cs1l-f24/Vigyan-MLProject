@@ -93,6 +93,6 @@ class AlphaZero:
             for epoch in trange(self.args['num_epochs']):
                 self.train(memory)
             
-            directory = "/Users/vigyansahai/Code/AlphaZeroCopy/Data"
+            directory = self.args['directory']
             torch.save(self.model.state_dict(), directory+"/"+f"model_{iteration}_{self.game}.pt")
             torch.save(self.optimizer.state_dict(), directory+"/"+f"optimizer_{iteration}_{self.game}.pt")

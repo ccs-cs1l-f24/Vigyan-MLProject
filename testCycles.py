@@ -24,6 +24,8 @@ game = Cycles.Cycles(adj_matrix=adj_matrix, valid_cycles=valid_cycles)
 player = 1
 
 args = {
+    'num_resBlocks': 2,
+    'num_hidden': 16,
     'C' : 2,
     'num_searches': 64,
     'num_iterations': 4,
@@ -39,7 +41,7 @@ args = {
 
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
-model = ResNet.ResNet(game, 2, 16, device=device)
+model = ResNet.ResNet(game, args['num_resBlocks'], args['num_hidden'], device=device)
 model.load_state_dict(torch.load(args['trained_model'],map_location=device))
 model.eval()
 

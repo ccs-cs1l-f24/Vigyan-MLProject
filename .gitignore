@@ -5,8 +5,6 @@
 #pytorch data
 *.pt
 
-CyclesAlphaZeroParallel.py
-
 ### macOS ###
 # General
 .DS_Store

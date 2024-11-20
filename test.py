@@ -6,6 +6,14 @@ if torch.backends.mps.is_available():
 else:
     print ("MPS device not found.")
 
+import numpy
+print(numpy.__version__)
+
+print(torch.__version__)
+
+import tqdm
+print(tqdm.__version__)
+
 # import torch
 # import torch.nn as nn
 # import torch.nn.functional
