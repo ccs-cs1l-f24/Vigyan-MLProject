@@ -1,41 +1,59 @@
 import numpy
 
-class TicTacToe:
+class ConnectFour:
     def __init__(self):
-        self.row_count = 3
-        self.column_count = 3
-        self.action_size = self.row_count*self.column_count
+        self.row_count = 6
+        self.column_count = 7
+        self.action_size = self.column_count
+        self.in_a_row = 4
         
     def __repr__(self):
-        return "TicTacToe"
+        return "ConnectFour"
 
     def get_intial_state(self):
         return numpy.zeros((self.row_count,self.column_count))
     #action is an int relating to the cell on the game
     def get_next_state(self, state, action, player):
-        row = action//self.column_count
-        column = action%self.column_count
-        state[row,column] = player
+        #giga brain, gives max index where 0, aka, the lowest row
+        row = numpy.max(numpy.where(state[:, action]==0))
+        column = action
+        state[row, column] = player
         return state
     
     def get_valid_moves(self,state):
-        return (state.reshape(-1) == 0).astype(numpy.uint8)
+        #checking the top row, you can play if not blocked
+        return (state[0]==0).astype(numpy.uint8)
     
     def check_win(self,state,action):
         
         if(action==None):
             return False
         
-        row = action//self.column_count
-        column = action%self.column_count
+        row = numpy.min(numpy.where(state[:, action] != 0))
+        column = action
         player = state[row,column]
 
+        def count(rowoff, coloff):
+            for i in range(1, self.in_a_row):
+                r = row + (rowoff*i)
+                c = action + (coloff*i)
+                if(
+                    r < 0 
+                    or r >= self.row_count
+                    or c < 0
+                    or c >= self.column_count
+                    or state[r][c] != player
+                ):
+                    #subtract by 1 to offset the sum to deal with calling it twice
+                    return i -1
+            return self.in_a_row -1
+                
         return(
-            #summing along the whole row
-            numpy.sum(state[row, :]) == player*self.column_count
-            or numpy.sum(state[:,column]) == player*self.row_count
-            or numpy.sum(numpy.diag(state)) == player*self.row_count
-            or numpy.sum(numpy.diag(numpy.flip(state,axis=0))) == player*self.row_count
+            #subtract by 1 to offset the sum to deal with calling it twice
+            count(1, 0) >= self.in_a_row -1 #veritcal
+            or count(1, 1) + count(-1, -1) >= self.in_a_row -1 #top left diag
+            or count(1, -1) + count(-1, 1) >= self.in_a_row -1 #top right diag
+            or count(0, 1) + count(0, -1) >= self.in_a_row -1 #horizontal
         )
     
     def get_value_and_terminate(self, state, action):

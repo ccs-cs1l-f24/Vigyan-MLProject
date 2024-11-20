@@ -3,27 +3,23 @@ import MCTS
 import numpy
 import ResNet
 import torch
+import ConnectFour
 
-game = TicTacToe.TicTacToe()
+game = ConnectFour.ConnectFour()
 player = 1
 
 args = {
     'C' : 2,
     'num_searches': 60,
-    'num_iterations': 3,
-    'num_selfPlay_iterations': 500,
-    'num_epochs': 4,
-    'batch_size': 64,
-    'temperature' : 1.25,
     'dirichlet_epsilon': 0,
     'dirichlet_alpha': 0.3,
-    'trained_model': '/Users/vigyansahai/Code/AlphaZeroCopy/Data/model_2_TicTacToe.pt'
+    'trained_model': '/Users/vigyansahai/Code/AlphaZeroCopy/Data/model_2_ConnectFour.pt'
 }
 
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
-model = ResNet.ResNet(game, 4, 64, device=device)
-model.load_state_dict(torch.load(args['trained_model'],map_location=device))
+model = ResNet.ResNet(game, 9, 128, device=device)
+model.load_state_dict(torch.load(args['trained_model'], map_location=device))
 model.eval()
 
 mcts = MCTS.MCTS(game,args,model)
@@ -33,12 +29,13 @@ state = game.get_intial_state()
 
 while True:
     print(state)
+    print("\n")
     if player==1:
         valid_moves = game.get_valid_moves(state)
         print(valid_moves)
         action = int(input(f"{player}:"))
 
-        if valid_moves[action]==0:
+        if action>=len(valid_moves) or valid_moves[action]==0:
             print("not valid idot")
             continue
     else:

@@ -1,28 +1,45 @@
-import TicTacToe
+import Cycles
 import MCTS
 import numpy
 import ResNet
 import torch
+# the map:
+#        (0)
+#       / | \
+#    (3)  |  (1)
+#       \ | /
+#        (2)
 
-game = TicTacToe.TicTacToe()
+adj_matrix = numpy.array([
+    [0,1,1,1],
+    [1,0,1,0],
+    [1,1,0,1],
+    [1,0,1,0]
+])
+valid_cycles = numpy.array([
+    [0,1,2],
+    [3,2,0]
+])
+game = Cycles.Cycles(adj_matrix=adj_matrix, valid_cycles=valid_cycles)
 player = 1
 
 args = {
     'C' : 2,
-    'num_searches': 60,
-    'num_iterations': 3,
-    'num_selfPlay_iterations': 500,
+    'num_searches': 64,
+    'num_iterations': 4,
+    'num_selfPlay_iterations': 64,
     'num_epochs': 4,
-    'batch_size': 64,
+    'batch_size': 8,
     'temperature' : 1.25,
     'dirichlet_epsilon': 0,
     'dirichlet_alpha': 0.3,
-    'trained_model': '/Users/vigyansahai/Code/AlphaZeroCopy/Data/model_2_TicTacToe.pt'
+    'num_parallel_games': 16,
+    'trained_model': '/Users/vigyansahai/Code/AlphaZeroCopy/Data/model_2_Cycles.pt'
 }
 
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
-model = ResNet.ResNet(game, 4, 64, device=device)
+model = ResNet.ResNet(game, 2, 16, device=device)
 model.load_state_dict(torch.load(args['trained_model'],map_location=device))
 model.eval()
 
@@ -33,7 +50,7 @@ state = game.get_intial_state()
 
 while True:
     print(state)
-    if player==1:
+    if player==-1:
         valid_moves = game.get_valid_moves(state)
         print(valid_moves)
         action = int(input(f"{player}:"))
@@ -57,7 +74,7 @@ while True:
         if value==1:
             print(player,"won")
         else:
-            print("draw")
+            print(game.get_opponent(player),"won")
         break
 
     player = game.get_opponent(player)

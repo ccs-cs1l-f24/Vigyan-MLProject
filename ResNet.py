@@ -7,12 +7,12 @@ import torch.nn
 import torch.nn.functional
 
 class ResNet(torch.nn.Module):
-    numHIdden = 1
-    def __init__(self, game, num_resBlocks, num_hidden):#, device):
+    # numHIdden = 1
+    def __init__(self, game, num_resBlocks, num_hidden, device):
         super().__init__()
-        # self.device = device
+        self.device = device
         # self.numHIdden = num_hidden
-        # self.ggame = game
+        #self.ggame = game
         self.startBlock = torch.nn.Sequential(
             torch.nn.Conv2d(3, num_hidden, kernel_size=3,padding=1),
             torch.nn.BatchNorm2d(num_hidden),
@@ -37,7 +37,7 @@ class ResNet(torch.nn.Module):
             torch.nn.Linear(3 * game.row_count * game.column_count, 1),
             torch.nn.Tanh()
         )
-        #self.to(device)
+        self.to(device)
     # def policyHeadFunc (self, a, num_hidden: int, game):
     #     # import IPython; IPython.embed()
     #     print(a.size())

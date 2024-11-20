@@ -88,78 +88,84 @@ class Node:
             
         
 
-class MCTS:
+class MCTSParallel:
     def __init__(self, game, args, model):
         self.game = game
         self.args = args
         self.model = model
 
     @torch.no_grad()
-    def search(self, state):
-        root = Node(self.game, self.args, state, visit_count = 1) #head does not need the other values
+    def search(self, states, spGames):
         
         #This section adds noise to the state's inital moves, not sure why we are doing it here
         #tho, and not sure how it works, need to look at the hyper stuff
         # _ is a blank variable, since we dont use it
         policy, _ = self.model(
-            torch.tensor(self.game.get_encoded_state(state),device=self.model.device).unsqueeze(0)
+            torch.tensor(self.game.get_encoded_state(states),device=self.model.device)
         )
-        policy = torch.softmax(policy, axis = 1).squeeze(0).cpu().numpy()
-        #Dirichlet hyper para
+        #no squeeze here because we want to keep the batches
+        policy = torch.softmax(policy, axis = 1).cpu().numpy()
+        #Dirichlet hyper para, remember \ is a newline
         policy = (1 - self.args['dirichlet_epsilon'])*policy + (self.args['dirichlet_epsilon']) \
-            * numpy.random.dirichlet([self.args['dirichlet_alpha']] * self.game.action_size)
+            * numpy.random.dirichlet([self.args['dirichlet_alpha']] * self.game.action_size, size=policy.shape[0])
+            #we format the noise to be of the same dimension as each specific batch, not every batch, 
+            # This ensures that every batch gets the same noise map
+            # NOTE, REVISIT THIS LATER TO UNDERSTAND BETTER!!!!
         
-        valid_moves = self.game.get_valid_moves(state)
-        policy *= valid_moves #FREAKING GENIUS, any illigal moves are 0
-        policy /= numpy.sum(policy)
-        root.expand(policy)
+        #Looping through every batch
+        for i, spg in enumerate(spGames):
+            spg_policy = policy[i]
+            valid_moves = self.game.get_valid_moves(states[i])
+            spg_policy *= valid_moves #FREAKING GENIUS, any illigal moves are 0
+            spg_policy /= numpy.sum(spg_policy)
+            
+            
+            spg.root = Node(self.game, self.args, states[i], visit_count = 1) 
+            spg.root.expand(spg_policy)
         
 
         for search in range(self.args['num_searches']):
-            node = root
-            # selection
+            for spg in spGames:
+                spg.node = None
+                node = spg.root
+                # selection
 
-            while(node.is_fully_expanded()):
-                node = node.select()
+                while(node.is_fully_expanded()):
+                    node = node.select()
+                    
                 
-            
-            value, is_terminal = self.game.get_value_and_terminate(node.state, node.action_taken)
-            value = self.game.get_opponent_value(value)
-            
-            if not is_terminal:
-                # a = torch.tensor(self.game.get_encoded_state(node.state))
-                # print("size: ")
-                # print(a.size())
-                # a = a.unsqueeze(0)
-                # print(a.size())
+                value, is_terminal = self.game.get_value_and_terminate(node.state, node.action_taken)
+                value = self.game.get_opponent_value(value)
+                
+                if is_terminal:
+                    node.backpropagate(value)
+                else:
+                    spg.node = node
+                
+            #All the games not None, creates a list of indecies
+            expandable_spGames = [i for i in range(len(spGames)) if spGames[i].node is not None]
+                
+            if len(expandable_spGames) > 0:
+                #recreates states to only have the expandable states
+                states = numpy.stack([spGames[i].node.state for i in expandable_spGames])
+                
                 policy, value = self.model(
-                    #in the form of the 3 layers, turn it into a tensor from numpy stuff
-                    #do unsqueeze at pos 0 to add an extra dim for the flatten command in
-                    #ResNet to work
-                    torch.tensor(self.game.get_encoded_state(node.state), device=self.model.device).unsqueeze(0)
+                    #no need to unqueeze since it already has another dim from batching
+                    torch.tensor(self.game.get_encoded_state(states), device=self.model.device)
                 )
-                #softmax at 1 since pos 0 is the dummy dim, squeeze at 0 to get rid of dummy dim
-                #.cpu() moves the tensor to the cpu, since it could be on the gpu
-                #numpy only works on cpu, now we turn it back to numpy
-                policy = torch.softmax(policy, axis=1).squeeze(0).cpu().numpy()
+                #softmax at 1 since pos 0 is batch index
+                policy = torch.softmax(policy, axis=1).cpu().numpy()
+                
+                value = value.cpu().numpy()
+                
+            #mappingIdx = expandable_spGames[i] 
+            for i, mappingIdx in enumerate(expandable_spGames):
+                node = spGames[mappingIdx].node
+                spg_policy, spg_value = policy[i], value[i]
+                
                 valid_moves = self.game.get_valid_moves(node.state)
-                policy *= valid_moves #FREAKING GENIUS, any illigal moves are 0
-                policy /= numpy.sum(policy)
+                spg_policy *= valid_moves #FREAKING GENIUS, any illigal moves are 0
+                spg_policy /= numpy.sum(spg_policy)
                 
-                value = value.item()
-                
-                # expansion
-                node.expand(policy)
-                #node = node.expand()
-                #simulation
-                #value = node.simulate() #NOT ANYMORE, ai better
-            
-            # backprop
-            node.backpropagate(value)
-        
-        # return visit_counts
-        action_probs = numpy.zeros(self.game.action_size)
-        for child in root.children:
-            action_probs[child.action_taken] = child.visit_count
-        action_probs /= numpy.sum(action_probs)
-        return action_probs
+                node.expand(spg_policy)
+                node.backpropagate(spg_value)

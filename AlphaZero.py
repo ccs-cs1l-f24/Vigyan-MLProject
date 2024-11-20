@@ -61,9 +61,9 @@ class AlphaZero:
             value_targets = numpy.array(value_targets).reshape(-1,1)
             
             #tensorinnnggg
-            state = torch.tensor(state, dtype=torch.float32)#, device=self.model.device)
-            policy_targets = torch.tensor(policy_targets, dtype=torch.float32)# device=self.model.device)
-            value_targets = torch.tensor(value_targets, dtype=torch.float32)# device=self.model.device)
+            state = torch.tensor(state, dtype=torch.float32, device=self.model.device)
+            policy_targets = torch.tensor(policy_targets, dtype=torch.float32, device=self.model.device)
+            value_targets = torch.tensor(value_targets, dtype=torch.float32, device=self.model.device)
             
             out_policy, out_value = self.model(state)
             policy_loss = torch.nn.functional.cross_entropy(out_policy, policy_targets)
@@ -94,5 +94,5 @@ class AlphaZero:
                 self.train(memory)
             
             directory = "/Users/vigyansahai/Code/AlphaZeroCopy/Data"
-            torch.save(self.model.state_dict(), directory+"/"+f"model_{iteration}.pt")
-            torch.save(self.optimizer.state_dict(), directory+"/"+f"optimizer_{iteration}.pt")
+            torch.save(self.model.state_dict(), directory+"/"+f"model_{iteration}_{self.game}.pt")
+            torch.save(self.optimizer.state_dict(), directory+"/"+f"optimizer_{iteration}_{self.game}.pt")
