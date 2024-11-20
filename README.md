@@ -50,13 +50,12 @@ I haven't done these yet, but I'll hopefully get to them
 - Python version 3.12.7, whatever you have must be compatible with PyTorch
     - I got it from their [website](https://www.python.org/downloads/), but I'm sure you can use pip or something
 - NumPy version 2.1.2
-    - I used pip for this one, doubt any different version would break the code
     > pip install numpy
+    - I used pip for this one, doubt any different version would break the code
 
 - PyTorch version 2.5.0
     - I got this from their [website](https://pytorch.org/get-started/locally/)
 - tqdm version 4.66.5 (Kinda optional tho, but has sick bars)
-    - I used pip
     > pip install tdqm
 
 ## Installing
@@ -71,11 +70,11 @@ If you have an NVIDIA GPU, chnage "mps" to "cuda". If you have some other thing 
 
 ### Train the model
 Navigate to the AlphaZeroTest.py, change the following line of code to be the game you want:
-> game = [insert game here]
-
-> EX: game = Cycles.Cycles(adj_matrix=adj_matrix, valid_cycles=valid_cycles)
-
-> EX: game = TicTacToe.TicTacToe()
+```
+game = [insert game here]
+EX: game = Cycles.Cycles(adj_matrix=adj_matrix, valid_cycles=valid_cycles)
+EX: game = TicTacToe.TicTacToe()
+```
 
 Depending on the game you might have to create input for it, like for the exmaple of Cycles, it needs to know the adjacency matrix and the list of valid cycles on the map. But, a game like Tic Tac Toe doesn't need any inputs.
 You also need to change the 'directory' argument in args to be where you want the model to be stored.
@@ -87,16 +86,16 @@ Run the file with the following command:
 Once it finishes running, which might take a bit, 
 ### Play the game
 Navigate to the game's test.py file. In the args ensure that the args are the same as in the AlphaZeroTest.py file with the execption of the 'dirichlet_epsilon' which should be set to 0. The parameter 'trained_model' should be set to the path to the model that you trained.
-> 'dirichlet_epsilon' = 0,
-
-> 'trained_model' = [path to model location]
-
+```
+'dirichlet_epsilon' = 0,
+'trained_model' = [path to model location]
+```
 Once these are set you can run the file and have fun playing against the AI!
 > python3.12 [filename]
 
 You can change who goes first by changing the following command where 1: Player goes first, -1: AI goes first:
-> while True:
-
->    print(state)
-
->    if player==[Value = 1 or -1]:
+```
+while True:
+    print(state)
+    if player==[Value = 1 or -1]:
+```
