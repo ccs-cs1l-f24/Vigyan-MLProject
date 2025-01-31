@@ -2,7 +2,7 @@ import numpy
 
 class Cycles:
     def __init__(self, adj_matrix, valid_cycles):
-        self.row_count = 4
+        self.row_count = adj_matrix.shape[0]
         self.column_count = self.row_count
         self.action_size = self.row_count*self.row_count
         self.adj_matrix = adj_matrix
@@ -65,7 +65,7 @@ class Cycles:
         player = state[row,column]
         
         # print("which_cycle: ", self.which_cycle[row][column])
-        for i in range(len(self.which_cycle[row][column])):
+        for i in self.which_cycle[row][column]:
             current_cycle = self.valid_cycles[i]
             # print("cur cycle: ", current_cycle)
             #checking one direction

@@ -1,18 +1,35 @@
 import torch
-if torch.backends.mps.is_available():
-    mps_device = torch.device("mps")
-    x = torch.ones(1, device=mps_device)
-    print (x)
-else:
-    print ("MPS device not found.")
-
 import numpy
-print(numpy.__version__)
+import LineCycleMaker
+import IdealLinePlayer
 
-print(torch.__version__)
+# wad = numpy.array([1,2,3,2,1,1,1,1,1])
+# player = IdealLinePlayer.IdealLinePlayer()
+# player.action(wad)
+# wadawd = [[],[]]
+# wadawd[0].append('r')
+while(True):
+    print('ho')
+# print('ww',wadawd)
 
-import tqdm
-print(tqdm.__version__)
+
+# print(LineCycleMaker.CircleGraph(5))
+# print(LineCycleMaker.LineGraph(5))
+# print("\n")
+# if torch.backends.mps.is_available():
+#     mps_device = torch.device("mps")
+#     x = torch.ones(1, device=mps_device)
+#     print (x)
+# else:
+#     print ("MPS device not found.")
+
+# import numpy
+# print(numpy.__version__)
+
+# print(torch.__version__)
+
+# import tqdm
+# print(tqdm.__version__)
 
 # import torch
 # import torch.nn as nn

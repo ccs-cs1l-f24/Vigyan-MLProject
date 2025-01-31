@@ -1,4 +1,4 @@
-import TicTacToe
+import Cycles
 import MCTSParallel
 import numpy
 import ResNet
@@ -9,7 +9,7 @@ import torch.nn.functional
 from tqdm import trange
 
 class AlphaZeroParallel:
-    def __init__(self, model, optimizer, game: TicTacToe.TicTacToe, args):
+    def __init__(self, model, optimizer, game: Cycles.Cycles, args):
         self.model = model
         self.optimizer = optimizer
         self.game = game
@@ -66,6 +66,10 @@ class AlphaZeroParallel:
     def train(self, memory):
         random.shuffle(memory)
         for batchIndex in range (0,len(memory), self.args['batch_size']):
+            print("batchIndex: ",batchIndex, " max: ",min(len(memory)-1,batchIndex+self.args['batch_size']))
+            #to avoid annoying errors with small batch sizes
+            if (batchIndex==min(len(memory)-1,batchIndex+self.args['batch_size'])) or (batchIndex+1==(min(len(memory)-1,batchIndex+self.args['batch_size']))):
+                continue
             sample = memory[batchIndex:min(len(memory)-1,batchIndex+self.args['batch_size'])]
             state, policy_targets, value_targets = zip(*sample)
             
@@ -78,6 +82,7 @@ class AlphaZeroParallel:
             policy_targets = torch.tensor(policy_targets, dtype=torch.float32, device=self.model.device)
             value_targets = torch.tensor(value_targets, dtype=torch.float32, device=self.model.device)
             
+            #calculating the loss function to backpropagate
             out_policy, out_value = self.model(state)
             policy_loss = torch.nn.functional.cross_entropy(out_policy, policy_targets)
             value_loss = torch.nn.functional.mse_loss(out_value,value_targets)
@@ -107,8 +112,10 @@ class AlphaZeroParallel:
                 self.train(memory)
             
             directory = self.args['directory']
-            torch.save(self.model.state_dict(), directory+"/"+f"model_{iteration}_{self.game}.pt")
-            torch.save(self.optimizer.state_dict(), directory+"/"+f"optimizer_{iteration}_{self.game}.pt")
+            torch.save(self.model.state_dict(), directory+"/"+f"model_{iteration}_{self.game}_{self.model}.pt")
+            torch.save(self.optimizer.state_dict(), directory+"/"+f"optimizer_{iteration}_{self.game}_{self.model}.pt")
+
+            
             
 class SPG():
     def __init__(self, game):

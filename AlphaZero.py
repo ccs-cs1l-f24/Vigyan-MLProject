@@ -1,4 +1,4 @@
-import TicTacToe
+import Cycles
 import MCTS
 import numpy
 import ResNet
@@ -9,7 +9,7 @@ import torch.nn.functional
 from tqdm import trange
 
 class AlphaZero:
-    def __init__(self, model, optimizer, game: TicTacToe.TicTacToe, args):
+    def __init__(self, model, optimizer, game: Cycles.Cycles, args):
         self.model = model
         self.optimizer = optimizer
         self.game = game
