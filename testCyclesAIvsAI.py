@@ -54,26 +54,7 @@ for zx in range(16):
         'weight_decay':0.0001,
         'num_resBlocks': 7,
         'num_hidden': 64,
-        'C' : 1,
-        'num_searches': 50,
-        'num_iterations': 16,
-        'num_selfPlay_iterations': 240,
-        'num_epochs': 4,
-        'batch_size': 20,
-        'temperature' : 1,
-        'dirichlet_epsilon': 0,
-        'dirichlet_alpha': 0.1,
-        'num_parallel_games': 120,
-        'check_ai':True,
-        'trained_model': '/Users/vigyansahai/Code/AlphaZeroCopy/Data/C/model_'+str(zx)+'_Cycles_ResNetCycles.pt'
-    }
-
-    args2 = {
-        'lr':0.002,
-        'weight_decay':0.0001,
-        'num_resBlocks': 7,
-        'num_hidden': 64,
-        'C' : 6,
+        'C' : 2,
         'num_searches': 50,
         'num_iterations': 16,
         'num_selfPlay_iterations': 240,
@@ -84,7 +65,26 @@ for zx in range(16):
         'dirichlet_alpha': 0.1,
         'num_parallel_games': 120,
         'check_ai':True,
-        'trained_model': '/Users/vigyansahai/Code/AlphaZeroCopy/Data/A/model_'+str(zx)+'_Cycles_ResNetCycles.pt'
+        'trained_model': './Data/C/model_'+str(zx)+'_Cycles_ResNetCycles.pt'
+    }
+
+    args2 = {
+        'lr':0.002,
+        'weight_decay':0.0001,
+        'num_resBlocks': 7,
+        'num_hidden': 64,
+        'C' : 2,
+        'num_searches': 50,
+        'num_iterations': 16,
+        'num_selfPlay_iterations': 240,
+        'num_epochs': 8,
+        'batch_size': 20,
+        'temperature' : 1,
+        'dirichlet_epsilon': 0,
+        'dirichlet_alpha': 0.1,
+        'num_parallel_games': 120,
+        'check_ai':True,
+        'trained_model': './Data/D/model_'+str(zx)+'_Cycles_ResNetCycles.pt'
     }
 
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")

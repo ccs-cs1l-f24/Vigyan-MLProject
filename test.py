@@ -8,8 +8,8 @@ import IdealLinePlayer
 # player.action(wad)
 # wadawd = [[],[]]
 # wadawd[0].append('r')
-while(True):
-    print('ho')
+valid_moves = [1,2]
+print(numpy.sum(valid_moves))
 # print('ww',wadawd)
 
 

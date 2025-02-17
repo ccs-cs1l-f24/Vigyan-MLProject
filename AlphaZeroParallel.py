@@ -9,12 +9,13 @@ import torch.nn.functional
 from tqdm import trange
 
 class AlphaZeroParallel:
-    def __init__(self, model, optimizer, game: Cycles.Cycles, args):
+    def __init__(self, model, optimizer, game: Cycles.Cycles, args, scheduler):
         self.model = model
         self.optimizer = optimizer
         self.game = game
         self.args = args
         self.mcts = MCTSParallel.MCTSParallel(game, args, model)
+        self.scheduler = scheduler
         
     def selfPlay(self):
         return_memory = []
@@ -66,8 +67,8 @@ class AlphaZeroParallel:
     def train(self, memory):
         random.shuffle(memory)
         for batchIndex in range (0,len(memory), self.args['batch_size']):
-            print("batchIndex: ",batchIndex, " max: ",min(len(memory)-1,batchIndex+self.args['batch_size']))
-            #to avoid annoying errors with small batch sizes
+            # print("batchIndex: ",batchIndex, " max: ",min(len(memory)-1,batchIndex+self.args['batch_size']))
+            #to avoid annoying errors with small batch sizs
             if (batchIndex==min(len(memory)-1,batchIndex+self.args['batch_size'])) or (batchIndex+1==(min(len(memory)-1,batchIndex+self.args['batch_size']))):
                 continue
             sample = memory[batchIndex:min(len(memory)-1,batchIndex+self.args['batch_size'])]
@@ -91,12 +92,14 @@ class AlphaZeroParallel:
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
+            self.scheduler.step()
             
             
             
         
     def learn(self):
         for iteration in range(self.args['num_iterations']):
+            print("Iteration: ",iteration)
             #training data for one cycle
             memory = []
             

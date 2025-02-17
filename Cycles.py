@@ -101,6 +101,7 @@ class Cycles:
             return 1,True
         if(numpy.sum(self.get_valid_moves(state))==0):
             return 0,True
+        
         return 0,False
     
     def get_opponent(self,player):

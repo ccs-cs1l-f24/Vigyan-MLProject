@@ -58,22 +58,22 @@ for zx in range(16):
     # if zx != 4 and zx != 8 and zx != 16 and zx != 31 :
     #     continue
     args1 = {
-        'lr':0.002,
+        'lr':0.2,
         'weight_decay':0.0001,
         'num_resBlocks': 10,
         'num_hidden': 64,
         'C' : 4,
         'num_searches': 50,
         'num_iterations': 16,
-        'num_selfPlay_iterations': 240,
-        'num_epochs': 8,
-        'batch_size': 20,
+        'num_selfPlay_iterations': 400,
+        'num_epochs': 5,
+        'batch_size': 40,
         'temperature' : 1,
         'dirichlet_epsilon': 0,
         'dirichlet_alpha': 0.1,
         'num_parallel_games': 120,
         'check_ai':True,
-        'trained_model': '/Users/vigyansahai/Code/AlphaZeroCopy/Data/B/model_'+str(zx)+'_Cycles_ResNetCycles.pt'
+        'trained_model': './Data/A/model_'+str(zx)+'_Cycles_ResNetCycles.pt'
     }
 
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
@@ -97,14 +97,20 @@ for zx in range(16):
         if player==-1:
             for i in range(len(spGames))[::-1]:
                 spg = spGames[i]
+                if(numpy.sum(game.get_valid_moves(spg.state))==0): print('da hec',i)
                 valid_moves = game.get_valid_moves(spg.state)
+                if(numpy.sum(valid_moves)==0): print('da hec',i)
+                # else: print('size',numpy.sum(valid_moves))
+                if(valid_moves.size==0): print(':(')
+                # print(valid_moves)
                 action = rp.action(valid_moves)
                 
                 spg.state = game.get_next_state(spg.state, action, player)
                 
                 value, is_terminal = game.get_value_and_terminate(spg.state, action)
-                
+                # print(i)
                 if is_terminal:
+                    # print('killed',i)
                     # numpy.set_printoptions(linewidth=numpy.nan)
                     # print(state)
                     if value==1:
@@ -129,23 +135,30 @@ for zx in range(16):
         #the [::-1] flips the index to go backwards to avoid array size issues later
         for i in range(len(spGames))[::-1]:
             spg = spGames[i]
+            if(numpy.sum(game.get_valid_moves(spg.state))==0): print('da hecc')
             # taken from MCTS
             action_probs = numpy.zeros(game.action_size)
             for child in spg.root.children:
                 action_probs[child.action_taken] = child.visit_count
+            flag = False
+            if(numpy.sum(action_probs)==0): 
+                # print('ap: ',action_probs)
+                flag = True
             action_probs /= numpy.sum(action_probs)
 
             #this is a hyper-parameter to add randomness into the action chosen to play by the AI
             temperature_action_probs = action_probs ** (1 / args1['temperature'])
-
+            # if(flag): print('tap: ',temperature_action_probs)
             # action = numpy.random.choice(game.action_size, p=(temperature_action_probs / numpy.sum(temperature_action_probs)))
+            # print('ai: ',game.get_valid_moves(spg.state))
             action = numpy.argmax(temperature_action_probs)
             
             spg.state = game.get_next_state(spg.state, action, player)
             
             value, is_terminal = game.get_value_and_terminate(spg.state, action)
-            
+            # print('ai',i)
             if is_terminal:
+                # print('AIkilled',i)
                 # numpy.set_printoptions(linewidth=numpy.nan)
                 # print(state)
                 if value==1:
