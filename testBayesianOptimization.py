@@ -61,30 +61,29 @@ changeArgs1 = [
     'batch_size',
     'temperature',
     'dirichlet_epsilon',
-    'dirichlet_alpha',
-    'num_parallel_games'
+    'dirichlet_alpha'
 ]
 staticArgs1 = {
     'num_iterations':16,
+    'num_parallel_games':256,
     'check_ai':True,
     'directory':'./Data/BayesianModels/'
 }
 
 #bound [lower, upper) isInt
 bounds = [
-    [0.0001,1,0], # lr
+    [0.0001,0.5,0], # lr
     [0.00001,1,0], # weight_decay
-    [1,8,1], # num_resBlocks
+    [7,14,1], # num_resBlocks
     [16,128,1], # num_hidden
     [0.5,10,0], # C
     [8,128,1], # num_searches
-    [64,512,1], # num_selfPlay_iterations
+    [512,1024,1], # num_selfPlay_iterations
     [1,12,1], # num_epochs
     [16,64,1], # batch_size
     [1,10,0], # temperature
     [0,1,0], # dirichlet_epsilon
     [0,1,0], # dirichlet_alpha
-    [64,256,1] # num_parallel_games
 ]
 def unscaling(args, bounds):
     newArgs = []
@@ -118,3 +117,21 @@ args, value, index = BayesianOptimization.bayesian_opt\
 print('bestRatio: ',value)
 print('args: ', args)
 print('index', index)
+
+
+
+# bounds = [
+#     [0.0001,1,0], # lr
+#     [0.00001,1,0], # weight_decay
+#     [1,8,1], # num_resBlocks
+#     [16,128,1], # num_hidden
+#     [0.5,10,0], # C
+#     [8,128,1], # num_searches
+#     [64,512,1], # num_selfPlay_iterations
+#     [1,12,1], # num_epochs
+#     [16,64,1], # batch_size
+#     [1,10,0], # temperature
+#     [0,1,0], # dirichlet_epsilon
+#     [0,1,0], # dirichlet_alpha
+#     [64,256,1] # num_parallel_games
+# ]

@@ -58,23 +58,23 @@ for zx in range(16):
     # if zx != 4 and zx != 8 and zx != 16 and zx != 31 :
     #     continue
     args1 = {
-        'lr':0.7224303919732571,
-        'weight_decay':0.2754741642761231,
-        'num_resBlocks': 6,
-        'num_hidden': 67,
-        'C' : 1.6668683290481567,
-        'num_searches': 110,
+        'lr':0.002,
+        'weight_decay':0.0001,
+        'num_resBlocks': 7,
+        'num_hidden': 64,
+        'C' : 2,
+        'num_searches': 100,
         'num_iterations': 16,
-        'num_selfPlay_iterations': 295,
-        'num_epochs': 9,
-        'batch_size': 23,
-        'temperature' : 3.5337294340133667,
-        'dirichlet_epsilon': 0.10986435413360596,
-        'dirichlet_alpha': 0.20370936393737793,
-        'num_parallel_games': 126,
+        'num_selfPlay_iterations': 256,
+        'num_epochs': 4,
+        'batch_size': 32,
+        'temperature' : 1,
+        'dirichlet_epsilon': 0.7,
+        'dirichlet_alpha': 0.3,
+        'num_parallel_games': 128,
         'check_ai':True,
-        'directory': "./Data/Manual/A",
-        'trained_model': './Data/Manual/A/model_'+str(zx)+'_Cycles_ResNetCycles.pt'
+        'directory': "./Data/Manual/E-Control",
+        'trained_model': './Data/Manual/E-Control/model_'+str(zx)+'_Cycles_ResNetCycles.pt'
     }
     args1['dirichlet_epsilon']=0
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
@@ -95,7 +95,7 @@ for zx in range(16):
     player = 1
     spGames = [ SPG(game) for spg in range(100)]
     while len(spGames) > 0:
-        if player==1:
+        if player==-1:
             for i in range(len(spGames))[::-1]:
                 spg = spGames[i]
                 if(numpy.sum(game.get_valid_moves(spg.state))==0): print('da hec',i)
