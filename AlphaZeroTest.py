@@ -52,25 +52,24 @@ game = Cycles.Cycles(adj_matrix=adj_matrix, valid_cycles=valid_cycles)
 
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 #device = torch.device("cpu")
-
+# args:  [0.7224303919732571, 0.2754741642761231, 6, 67, 1.6668683290481567, 110, 295, 9, 23, 3.5337294340133667, 0.10986435413360596, 0.20370936393737793, 126]
 args = {
-    'lr':0.002,
-    'max_lr':0.2,
-    'weight_decay':0.0001,
-    'num_resBlocks': 10,
-    'num_hidden': 64,
-    'C' : 4,
-    'num_searches': 50,
+    'lr':0.7224303919732571,
+    'weight_decay':0.2754741642761231,
+    'num_resBlocks': 6,
+    'num_hidden': 67,
+    'C' : 1.6668683290481567,
+    'num_searches': 110,
     'num_iterations': 16,
-    'num_selfPlay_iterations': 400,
-    'num_epochs': 5,
-    'batch_size': 40,
-    'temperature' : 1,
-    'dirichlet_epsilon': 0.5,
-    'dirichlet_alpha': 0.1,
-    'num_parallel_games': 120,
+    'num_selfPlay_iterations': 295,
+    'num_epochs': 9,
+    'batch_size': 23,
+    'temperature' : 3.5337294340133667,
+    'dirichlet_epsilon': 0.10986435413360596,
+    'dirichlet_alpha': 0.20370936393737793,
+    'num_parallel_games': 126,
     'check_ai':True,
-    'directory': "./Data/A"
+    'directory': "./Data/Manual/A"
     # 'directory': "/Users/vigyansahai/Code/AlphaZeroCopy/Data/C"
 }
 

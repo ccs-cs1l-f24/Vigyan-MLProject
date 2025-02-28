@@ -1,42 +1,57 @@
 import torch
 import numpy
+import Cycles
 import LineCycleMaker
 import IdealLinePlayer
-
-# wad = numpy.array([1,2,3,2,1,1,1,1,1])
-# player = IdealLinePlayer.IdealLinePlayer()
-# player.action(wad)
-# wadawd = [[],[]]
-# wadawd[0].append('r')
-valid_moves = [1,2]
-print(numpy.sum(valid_moves))
-# print('ww',wadawd)
+import objectiveFunctionRandom
+import BayesianOptimization
 
 
-# print(LineCycleMaker.CircleGraph(5))
-# print(LineCycleMaker.LineGraph(5))
-# print("\n")
-# if torch.backends.mps.is_available():
-#     mps_device = torch.device("mps")
-#     x = torch.ones(1, device=mps_device)
-#     print (x)
-# else:
-#     print ("MPS device not found.")
 
-# import numpy
-# print(numpy.__version__)
+adj_matrix = numpy.array([
+    [0,1,1,1],
+    [1,0,1,0],
+    [1,1,0,1],
+    [1,0,1,0]
+])
+valid_cycles = numpy.array([
+    [0,1,2],
+    [3,2,0]
+])
+game = Cycles.Cycles(adj_matrix=adj_matrix, valid_cycles=valid_cycles)
+# args = {'lr': (0.1913), 'weight_decay': (0.9423), 'num_resBlocks': 2, 'num_hidden': 16, 'C': (2.3832), 'num_searches': 10, 'num_selfPlay_iterations': 116, 'num_epochs': 3, 'batch_size': 20, 'temperature': (7.4322), 'dirichlet_epsilon': (0.9403), 'dirichlet_alpha': (0.1353), 'num_parallel_games': 80, 'num_iterations': 3, 'check_ai': True, 'directory': './Data/BayesianModels/0'}
 
-# print(torch.__version__)
 
-# import tqdm
-# print(tqdm.__version__)
+args = {'lr': (0.0159), 'weight_decay': (0.8363), 'num_resBlocks': 1, 'num_hidden': 28, 'C': (0.9153), 'num_searches': 15, 'num_selfPlay_iterations': 109, 'num_epochs': 1, 'batch_size': 28, 'temperature': (3.7989), 'dirichlet_epsilon': (0.4572), 'dirichlet_alpha': (0.7367), 'num_parallel_games': 116, 'num_iterations': 3, 'check_ai': True, 'directory': './Data/BayesianModels/0'}
+bounds = [
+    [0.0001,1,0], # lr
+    [0.00001,1,0], # weight_decay
+    [1,3,1], # num_resBlocks
+    [16,32,1], # num_hidden
+    [0.5,6,0], # C
+    [10,20,1], # num_searches
+    [64,128,1], # num_selfPlay_iterations
+    [1,4,1], # num_epochs
+    [16,32,1], # batch_size
+    [1,10,0], # temperature
+    [0,1,0], # dirichlet_epsilon
+    [0,1,0], # dirichlet_alpha
+    [64,128,1] # num_parallel_games
+]
 
-# import torch
-# import torch.nn as nn
-# import torch.nn.functional
+def unscaling(args, bounds):
+    newArgs = []
+    for i, arg in enumerate(args):
+        l = bounds[i][0]; u =bounds[i][1]
+        if(bounds[i][2]==1):
+            newArgs.append(int((u-l)*(arg)+l))
+        else:
+            newArgs.append((u-l)*(arg)+l)    
+    return newArgs
 
-# ad = torch.randn(2, 3, 5, 7, 11, 3,3,3,3,3,3,3,3,3)
-# m = nn.Flatten()
-# # With default parameters
-# output = m(ad)
-# print(output.size())
+t = torch.rand(13)
+t = unscaling(t.tolist(), bounds=bounds)
+print(t)
+
+# newValue = BayesianOptimization.objFunction(game=game,args1=args, victoryCutoff=0.5)
+# print(newValue)
