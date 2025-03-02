@@ -111,6 +111,9 @@ class MCTS:
         
         valid_moves = self.game.get_valid_moves(state)
         policy *= valid_moves #FREAKING GENIUS, any illigal moves are 0
+        if(numpy.sum(policy)==0):
+            policy = valid_moves
+            # breakpoint()
         policy /= numpy.sum(policy)
         root.expand(policy)
         

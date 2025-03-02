@@ -36,6 +36,8 @@ class AlphaZeroParallel:
                 action_probs = numpy.zeros(self.game.action_size)
                 for child in spg.root.children:
                     action_probs[child.action_taken] = child.visit_count
+                if(numpy.sum(action_probs)==0):
+                    breakpoint()
                 action_probs /= numpy.sum(action_probs)
                 
                 spg.memory.append((spg.root.state, action_probs, player))

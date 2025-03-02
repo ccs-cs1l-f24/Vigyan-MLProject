@@ -5,7 +5,7 @@ import LineCycleMaker
 import IdealLinePlayer
 import objectiveFunctionRandom
 import BayesianOptimization
-
+import pickle
 
 
 adj_matrix = numpy.array([
@@ -38,7 +38,12 @@ bounds = [
     [0,1,0], # dirichlet_alpha
     [64,128,1] # num_parallel_games
 ]
-
+def scaling(args, bounds):
+    newArgs = []
+    for i, arg in enumerate(args):
+        l = bounds[i][0]; u =bounds[i][1]
+        newArgs.append((arg-l)/(u-l))
+    return newArgs
 def unscaling(args, bounds):
     newArgs = []
     for i, arg in enumerate(args):
@@ -49,9 +54,40 @@ def unscaling(args, bounds):
             newArgs.append((u-l)*(arg)+l)    
     return newArgs
 
-t = torch.rand(13)
-t = unscaling(t.tolist(), bounds=bounds)
-print(t)
+initialArgs = torch.zeros(4, 13)
+unscaledArgs = [(unscaling(v.tolist(),bounds)) for v in (initialArgs)]
+scaledArgs = torch.stack([torch.tensor(scaling(v,bounds)) for v in (unscaledArgs)])
+
+
+values = torch.tensor([.1,.2,.3])
+args = torch.stack([torch.tensor([0.1, 0.1, 6, 67, 1.1, 110, 295, 9, 23, 3.1, 0.1, 0.1, 126]),
+        torch.tensor([0.2, 0.2, 6, 67, 1.2, 110, 295, 9, 23, 3.2, 0.2, 0.2, 126]),
+        torch.tensor([0.3, 0.3, 6, 67, 1.3, 110, 295, 9, 23, 3.3, 0.3, 0.3, 126])])
+
+gp = BayesianOptimization.GP(kernal=BayesianOptimization.Matern52, noise=0.1)
+gp.fit(args, values)
+
+samples = torch.rand(1, 13)
+values, covarience = gp.predict(samples)
+
+print(unscaledArgs)
+print(scaledArgs)
+print(values, covarience)
+
+# f = open("./Data/BayesianSave/test.txt", "wb")
+# stuff = [unscaledArgs, scaledArgs, gp]
+# pickle.dump(stuff,f)
+# f.close()
+print('check:')
+f = open("./Data/BayesianSave/test.txt", "rb")
+data = pickle.load(f)
+f.close()
+print(data[0])
+print(data[1])
+gpp = data[2]
+
+vvalues, ccovarience = gpp.predict(samples)
+print(vvalues, ccovarience)
 
 # newValue = BayesianOptimization.objFunction(game=game,args1=args, victoryCutoff=0.5)
 # print(newValue)

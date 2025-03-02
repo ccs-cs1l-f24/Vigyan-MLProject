@@ -162,9 +162,13 @@ class MCTSParallel:
             for i, mappingIdx in enumerate(expandable_spGames):
                 node = spGames[mappingIdx].node
                 spg_policy, spg_value = policy[i], value[i]
-                
+                # print(spg_policy)
                 valid_moves = self.game.get_valid_moves(node.state)
                 spg_policy *= valid_moves #FREAKING GENIUS, any illigal moves are 0
+                if(numpy.sum(spg_policy)==0):
+                    spg_policy = numpy.ones(len(valid_moves)) * valid_moves
+                    # breakpoint()
+                    
                 spg_policy /= numpy.sum(spg_policy)
                 
                 node.expand(spg_policy)

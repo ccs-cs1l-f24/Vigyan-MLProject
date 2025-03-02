@@ -1,6 +1,7 @@
 import torch
 import numpy
 import math
+import pickle
 from objectiveFunctionRandom import objFunction
 
 class GP:
@@ -52,42 +53,67 @@ def expected_improvement(values, varience, best_values,k=0):
         return ei
 
 #assume normalized bounds
-def bayesian_opt(game, iterations, numSamples, bounds, scaling, unscaling, setparamsDict, changeparams, kernal, guesses=4, aqFunct=0, k=1, victoryCutoff=0.7, noise=0.1):
+def bayesian_opt(\
+    game, iterations, numSamples, bounds, scaling, unscaling, setparamsDict, \
+    changeparams, kernal, guesses=4, aqFunct=0, k=1, victoryCutoff=0.7, noise=0.1, \
+    load_save=False):
     '''
-    RETURNED: bestArgs, bestValue
-    aqFunct{0->EI, 1->UCB}
+    RETURNED: bestArgs, bestValue\n
+    aqFunct{0->EI, 1->UCB}\n
+    Saves every bayesian iteration, to load from a preivious iteration set load_save to True
     '''
     with torch.no_grad():
-        initialArgs = torch.rand(guesses, len(changeparams))
-        unscaledArgs = [(unscaling(v.tolist(),bounds)) for v in (initialArgs)]
-        print(initialArgs)
-        print(unscaledArgs)
-        
         path = str(setparamsDict['directory'])
-        setparamsDict['directory'] = setparamsDict['directory']+'Guess'
-        
-        valuesArgs = []
-        for x in unscaledArgs:
-            args1 = dict(zip(changeparams,x))
-            args1.update(setparamsDict)
-            print('args:\n', args1)
-            noRandom_args1 = args1.copy()
-            noRandom_args1['dirichlet_epsilon']=0
-            with torch.enable_grad():
-                valuesArgs.append(objFunction(game=game,args1=noRandom_args1, victoryCutoff=victoryCutoff))
-        valuesArgs = torch.tensor(valuesArgs)
-        
-        bestValue = valuesArgs.max()
-        bestArgs = unscaledArgs[valuesArgs.argmax()]
-        bestIndex = -1
-        
-        gp = GP(kernal=kernal, noise=noise)
-        
-        for zx in range(iterations):
+        if(load_save==False):
+            initialArgs = torch.rand(guesses, len(changeparams))
+            unscaledArgs = [(unscaling(v.tolist(),bounds)) for v in (initialArgs)]
+            print(initialArgs)
+            print(unscaledArgs)
+            
+            setparamsDict['directory'] = setparamsDict['directory']+'Guess'
+            
+            valuesArgs = []
+            for x in unscaledArgs:
+                args1 = dict(zip(changeparams,x))
+                args1.update(setparamsDict)
+                print('args:\n', args1)
+                noRandom_args1 = args1.copy()
+                noRandom_args1['dirichlet_epsilon']=0
+                with torch.enable_grad():
+                    valuesArgs.append(objFunction(game=game,args1=noRandom_args1, victoryCutoff=victoryCutoff))
+            valuesArgs = torch.tensor(valuesArgs)
+            
+            bestValue = valuesArgs.max()
+            bestArgs = unscaledArgs[valuesArgs.argmax()]
+            bestIndex = -1
+            
+            gp = GP(kernal=kernal, noise=noise)
+            start =0
+        else:
+            f = open("./Data/BayesianSave/save.txt", "rb")
+            data = pickle.load(f)
+            f.close()
+            unscaledArgs = data[0]
+            valuesArgs = data[1]
+            bestValue = data[2]
+            bestArgs = data[3]
+            bestIndex = data[4]
+            gp = data[5]
+            start = data[6]
+        for zx in range(start,iterations):
             print('bayesian it: ', zx)
             setparamsDict['directory'] = path+str(zx)
             scaledArgs = torch.stack([torch.tensor(scaling(v,bounds)) for v in (unscaledArgs)])
-            gp.fit(scaledArgs, valuesArgs) 
+            gp.fit(scaledArgs, valuesArgs)
+            
+            #Save stuff for pausing
+            #save unscaledArgs, valuesArgs, bestValue, bestArgs, bestIndex, gp, zx
+            print('saving...',end='')
+            f = open("./Data/BayesianSave/save.txt", "wb")
+            stuff = [unscaledArgs, valuesArgs, bestValue, bestArgs, bestIndex, gp, zx]
+            pickle.dump(stuff,f)
+            f.close()
+            print('SAVED')
 
             # check the dimensions of samples, I dont get how gp.predict works on this
             # for the correct output of a single vector value and varience

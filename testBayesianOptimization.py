@@ -109,9 +109,10 @@ device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 # args:  [0.7224303919732571, 0.2754741642761231, 6, 67, 1.6668683290481567, 110, 295, 9, 23, 3.5337294340133667, 0.10986435413360596, 0.20370936393737793, 126]
 
 args, value, index = BayesianOptimization.bayesian_opt\
-                (game=game,iterations=64, numSamples=1000, setparamsDict=staticArgs1,\
+                (game=game,iterations=64, numSamples=5000, setparamsDict=staticArgs1,\
                 changeparams=changeArgs1, kernal=BayesianOptimization.Matern52, \
-                scaling=scaling, unscaling=unscaling, bounds=bounds, victoryCutoff=0.7, guesses=16
+                scaling=scaling, unscaling=unscaling, bounds=bounds, victoryCutoff=0.7, \
+                guesses=4, load_save=True
                 )
                 
 print('bestRatio: ',value)
@@ -134,4 +135,19 @@ print('index', index)
 #     [0,1,0], # dirichlet_epsilon
 #     [0,1,0], # dirichlet_alpha
 #     [64,256,1] # num_parallel_games
+# ]
+
+# bounds = [
+#     [0.0001,0.5,0], # lr
+#     [0.00001,1,0], # weight_decay
+#     [7,14,1], # num_resBlocks
+#     [16,128,1], # num_hidden
+#     [0.5,10,0], # C
+#     [8,128,1], # num_searches
+#     [512,1024,1], # num_selfPlay_iterations
+#     [1,12,1], # num_epochs
+#     [16,64,1], # batch_size
+#     [1,10,0], # temperature
+#     [0,1,0], # dirichlet_epsilon
+#     [0,1,0], # dirichlet_alpha
 # ]
