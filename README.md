@@ -113,3 +113,6 @@ while True:
     print(state)
     if player==[Value = 1 or -1]:
 ```
+
+Sticking this here for legal reasons in case I use their stuff:
+Use was made of the computational facilities administered by the Center for Scientific Computing at the CNSI and MRL (an NSF MRSEC; DMR-2308708) and purchased through NSF CNS-1725797
