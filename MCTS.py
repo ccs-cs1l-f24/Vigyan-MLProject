@@ -104,12 +104,14 @@ class MCTS:
         policy, _ = self.model(
             torch.tensor(self.game.get_encoded_state(state),device=self.model.device).unsqueeze(0)
         )
+        # print('policy:\n',policy)
         policy = torch.softmax(policy, axis = 1).squeeze(0).cpu().numpy()
         #Dirichlet hyper para
         policy = (1 - self.args['dirichlet_epsilon'])*policy + (self.args['dirichlet_epsilon']) \
             * numpy.random.dirichlet([self.args['dirichlet_alpha']] * self.game.action_size)
         
         valid_moves = self.game.get_valid_moves(state)
+        
         policy *= valid_moves #FREAKING GENIUS, any illigal moves are 0
         if(numpy.sum(policy)==0):
             policy = valid_moves

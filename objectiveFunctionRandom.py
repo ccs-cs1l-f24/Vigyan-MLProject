@@ -48,10 +48,11 @@ def objFunction(game, args1, victoryCutoff):
         model1.eval()
         mcts1 = MCTSParallel.MCTSParallel(game,args1,model1)
 
-        win = 0
-        lose = 0
+        
         #Code from AlphaZeroParallel
         for first in range(-1,2,2):
+            win = 0
+            lose = 0
             player = 1
             spGames = [ SPG(game) for spg in range(100)]
             while len(spGames) > 0:
@@ -125,13 +126,13 @@ def objFunction(game, args1, victoryCutoff):
                         # print(state)
                         if value==1:
                             # print(player,"won")
-                            if player==1:
+                            if player!=first:
                                 win = win+1
                             else:
                                 lose = lose+1
                         else:
                             # print(player,"won")
-                            if player==1:
+                            if player!=first:
                                 win = win+1
                             else:
                                 lose = lose+1

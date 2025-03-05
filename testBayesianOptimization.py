@@ -73,7 +73,7 @@ staticArgs1 = {
 #bound [lower, upper) isInt
 bounds = [
     [0.0001,0.5,0], # lr
-    [0.00001,1,0], # weight_decay
+    [0.00001,0.1,0], # weight_decay
     [7,14,1], # num_resBlocks
     [16,128,1], # num_hidden
     [0.5,10,0], # C
@@ -151,3 +151,7 @@ print('index', index)
 #     [0,1,0], # dirichlet_epsilon
 #     [0,1,0], # dirichlet_alpha
 # ]
+
+# bestRatio:  0.6941666666666667
+# args:  [0.04198784477710724, 0.57606262717247, 9, 58, 2.7265064418315887, 44, 973, 6, 37, 3.9412047266960144, 0.238503098487854, 0.05893164873123169]
+# index 36
