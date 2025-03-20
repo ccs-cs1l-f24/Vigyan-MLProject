@@ -41,6 +41,7 @@ class IdealLinePlayer():
     grundy['<--<']=0
     grundy['<-->']=1
     grundy['>--<']=1
+    highest_n = -1
     def __init__(self):
         pass
     def mex(self, vector):
@@ -55,6 +56,7 @@ class IdealLinePlayer():
                 return vector[i -1]+1
         return vector[vector.size-1]+1
     def stateString(self, n):
+        if n <= self.highest_n: return
         cases = [[],[],[],[],[],[],[],[],[]]
         # print(cases)
         string = '>'+('-' * (n-1))
@@ -109,7 +111,8 @@ class IdealLinePlayer():
         self.grundy['>'+string+'<'] = self.mex(cases[8])
         
     def action(self, state):
-        n = state.shape[0] #num of edge 1 less
+        n = state.shape[0] #num of edge is 1 less
         for i in range(3,n):
             self.stateString(i)
         print(self.grundy)
+        

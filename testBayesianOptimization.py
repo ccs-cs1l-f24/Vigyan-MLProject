@@ -74,7 +74,7 @@ staticArgs1 = {
 bounds = [
     [0.0001,0.5,0], # lr
     [0.00001,0.1,0], # weight_decay
-    [7,14,1], # num_resBlocks
+    [5,14,1], # num_resBlocks
     [16,128,1], # num_hidden
     [0.5,10,0], # C
     [8,128,1], # num_searches
@@ -112,7 +112,7 @@ args, value, index = BayesianOptimization.bayesian_opt\
                 (game=game,iterations=64, numSamples=5000, setparamsDict=staticArgs1,\
                 changeparams=changeArgs1, kernal=BayesianOptimization.Matern52, \
                 scaling=scaling, unscaling=unscaling, bounds=bounds, victoryCutoff=0.7, \
-                guesses=4, load_save=True
+                guesses=4, load_save=True, device=device
                 )
                 
 print('bestRatio: ',value)

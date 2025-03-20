@@ -113,6 +113,10 @@ class Cycles:
     def change_perspective(self, state, player):
         return state * player
     
+    def neutral_perspective(self,state):
+        nState = state.copy()
+        return 
+    
     def get_encoded_state(self, state):
         encoded_state = numpy.stack(
             (state==-1,state==0,state==1)

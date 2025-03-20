@@ -9,32 +9,54 @@ class GP:
         self.kernal = kernal
         self.noise = noise
     
-    def fit(self, X, Y):
+    def fit(self, X, Y,device=torch.device("cpu")):
         '''
         returns nothing, just initializes the weights of the GP
         '''
         with torch.no_grad():
-            self.X = X
-            self.Y = Y
+            self.X = X.to(device)
+            self.Y = Y.to(device)
             self.K = self.kernal(self.X,self.X)
             self.K = self.K + (self.noise*torch.eye(X.shape[0]))
             self.L = torch.linalg.cholesky(self.K)
             #need to unsqeeze to make dim fit, cholesky expects two 2D tensors
-            self.a = torch.cholesky_solve(self.Y.unsqueeze(1),self.L)
-            #Cholskey is an efficent way to solve stuff if stuff is positive
+            if(device.type=='mps'):
+                #need to do LL^Ta=Y
+                temp = torch.linalg.solve_triangular(self.L,self.Y.unsqueeze(1),upper=False)
+                self.a = torch.linalg.solve_triangular(self.L.T,temp,upper=True)
+            else:
+                self.a = torch.cholesky_solve(self.Y.unsqueeze(1),self.L)
+                #Cholskey is an efficent way to solve stuff if stuff is positive
     
     
-    def predict(self, points):
+    def predict(self, points,device=torch.device("cpu"),batch=10000):
         '''
         returns the values and covarience^2
         '''
         with torch.no_grad():
             # print(self.X.shape,points.shape)
-            K_points = self.kernal(self.X, points)
+            K_points = self.kernal((self.X).to(device), points.to(device))
+            print('K_POINTS is on', K_points.get_device())
             # print(K_points.shape)
-            values = K_points.t() @ self.a
-            temp = torch.cholesky_solve(K_points,self.L)
-            covarience = self.noise-K_points.t() @ temp
+            values = K_points.t() @ (self.a).to(device)
+            print('values is on', values.get_device())
+            if(device.type=='mps'):
+                tempoftemp = torch.linalg.solve_triangular((self.L).to(device),K_points,upper=False)
+                temp = torch.linalg.solve_triangular((self.L.T).to(device),tempoftemp,upper=True)
+            else:
+                temp = torch.cholesky_solve(K_points,(self.L).to(device))
+            # print('shape of K_points.t',K_points.T.shape,'otherone:',K_points.t().shape,'tempshape:',temp.shape)
+            #Batched covarinance cuz this tensor product is big
+            covarience = torch.full((points.shape[0],points.shape[0]) ,self.noise)
+            # for i in range(0,points.shape[0],batch):
+            #     covarience[i:i+batch, :] -= ((K_points.T[i:i+batch,:])@(temp)).to(torch.device('cpu'))
+            
+            for i in range(0,points.shape[0],batch):
+                for j in range(0,points.shape[0],batch):
+                    covarience[i:i+batch, j:j+batch] -= ((K_points.T[i:i+batch,:])@(temp[:,j:j+batch])).to(torch.device('cpu'))
+            
+            # covarience = self.noise-(K_points.T) @ (temp)
+            print('covar is on', covarience.get_device())
             return values, covarience
 
 def UCB(values, covarience, k):
@@ -56,7 +78,7 @@ def expected_improvement(values, varience, best_values,k=0):
 def bayesian_opt(\
     game, iterations, numSamples, bounds, scaling, unscaling, setparamsDict, \
     changeparams, kernal, guesses=4, aqFunct=0, k=1, victoryCutoff=0.7, noise=0.1, \
-    load_save=False):
+    load_save=False, device=torch.device("cpu")):
     '''
     RETURNED: bestArgs, bestValue\n
     aqFunct{0->EI, 1->UCB}\n
@@ -80,7 +102,7 @@ def bayesian_opt(\
                 noRandom_args1 = args1.copy()
                 noRandom_args1['dirichlet_epsilon']=0
                 with torch.enable_grad():
-                    valuesArgs.append(objFunction(game=game,args1=noRandom_args1, victoryCutoff=victoryCutoff))
+                    valuesArgs.append(objFunction(game=game,args1=noRandom_args1, victoryCutoff=victoryCutoff,device=device))
             valuesArgs = torch.tensor(valuesArgs)
             
             bestValue = valuesArgs.max()
@@ -104,7 +126,7 @@ def bayesian_opt(\
             print('bayesian it: ', zx)
             setparamsDict['directory'] = path+str(zx)
             scaledArgs = torch.stack([torch.tensor(scaling(v,bounds)) for v in (unscaledArgs)])
-            gp.fit(scaledArgs, valuesArgs)
+            gp.fit(scaledArgs, valuesArgs,device=device)
             
             #Save stuff for pausing
             #save unscaledArgs, valuesArgs, bestValue, bestArgs, bestIndex, gp, zx
@@ -115,10 +137,9 @@ def bayesian_opt(\
             f.close()
             print('SAVED')
 
-            # check the dimensions of samples, I dont get how gp.predict works on this
             # for the correct output of a single vector value and varience
             samples = torch.rand(numSamples, len(changeparams))
-            values, covarience = gp.predict(samples)
+            values, covarience = gp.predict(samples,device=device)
             # unsquare the varience, only take the diagonal part for the varince of the points with themselves
             covarience = torch.diag(covarience).sqrt()
             
@@ -135,7 +156,7 @@ def bayesian_opt(\
             noRandom_args1 = args1.copy()
             noRandom_args1['dirichlet_epsilon']=0
             with torch.enable_grad():
-                newValue = objFunction(game=game,args1=noRandom_args1, victoryCutoff=victoryCutoff)
+                newValue = objFunction(game=game,args1=noRandom_args1, victoryCutoff=victoryCutoff,device=device)
             if(newValue>bestValue):
                 bestValue = newValue
                 bestArgs = newArgs
@@ -143,11 +164,43 @@ def bayesian_opt(\
             valuesArgs = torch.cat((valuesArgs,torch.tensor([newValue])))
             unscaledArgs.append(newArgs)
             print(unscaledArgs)
+            
+            #DELETE
+            
+            # for zx in range(start,iterations):
+            #     scaledArgs = torch.stack([torch.tensor(scaling(v,bounds)) for v in (unscaledArgs)])
+            #     gp.fit(scaledArgs, valuesArgs)
+            #     samples = torch.rand(numSamples, len(changeparams))
+            #     values, covarience = gp.predict(samples)
+            #     choicesIndex = expected_improvement(values, covarience, best_values=bestValue)
+            #     newArgs = unscaling(samples[choicesIndex].tolist(),bounds)
+            #     args1 = dict(zip(changeparams,newArgs))
+            #     noRandom_args1 = args1.copy()
+            #     noRandom_args1['dirichlet_epsilon']=0
+            #     with torch.enable_grad():
+            #         newValue = objFunction(game=game,args1=noRandom_args1, victoryCutoff=victoryCutoff)
+            #     if(newValue>bestValue):
+            #         bestValue = newValue
+            #         bestArgs = newArgs
+            #         bestIndex = zx
+            #     valuesArgs = torch.cat((valuesArgs,torch.tensor([newValue])))
+            #     unscaledArgs.append(newArgs)
+            #     print(unscaledArgs)
+                
+            
+            #DELETE
+            
+            
+            
         return bestArgs, bestValue, bestIndex
 
 def Matern52(x1, x2, var=1, length=1):
     with torch.no_grad():
+        # x1=x1.to(device)
+        # x2=x2.to(device)
+        print('x1x2 is on',x1.get_device(),x2.get_device())
         r = torch.cdist(x1,x2)
+        print("r is on",r.get_device())
         # r = torch.linalg.vector_norm(x1-x2)
         return (var)*(1+(5**1/2)*(r/length)+(5)*(r**2)/((3)*(length)))*(torch.exp((-r)*(5**1/2)/length))
 

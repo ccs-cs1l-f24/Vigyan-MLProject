@@ -58,24 +58,26 @@ game = Cycles.Cycles(adj_matrix=adj_matrix, valid_cycles=valid_cycles)
 player = 1
 for zx in range(16):
     # if(zx!=15): continue
+    # index 55
+    #[0.14653052592277527, 0.060361624289155015, 6, 88, 4.1289102435112, 125, 734, 3, 30, 1.7032934427261353, 0.2207707166671753, 0.13379442691802979]
     args1 = {
-        'lr':0.002,
-        'weight_decay':0.0001,
-        'num_resBlocks': 9,
-        'num_hidden': 58,
-        'C' : 2.7265064418315887,
-        'num_searches': 44,
+        'lr':0.14653052592277527,
+        'weight_decay':0.060361624289155015,
+        'num_resBlocks': 6,
+        'num_hidden': 88,
+        'C' : 4.1289102435112,
+        'num_searches': 125,
         'num_iterations': 16,
-        'num_selfPlay_iterations': 973,
-        'num_epochs': 6,
-        'batch_size': 37,
-        'temperature' : 3.9412047266960144,
-        'dirichlet_epsilon': 0.238503098487854,
-        'dirichlet_alpha': 0.05893164873123169,
+        'num_selfPlay_iterations': 734,
+        'num_epochs': 3,
+        'batch_size': 30,
+        'temperature' : 1.7032934427261353,
+        'dirichlet_epsilon': 0.2207707166671753,
+        'dirichlet_alpha': 0.13379442691802979,
         'num_parallel_games': 128,
         'check_ai':True,
-        'directory': "./Data/BayesianModels/36",
-        'trained_model': './Data/Manual/D/model_'+str(zx)+f'_{game}_ResNetCycles.pt'
+        'directory': "./Data/BayesianModels/55",
+        'trained_model': './Data/BayesianModels/55/model_'+str(zx)+f'_{game}_ResNetCycles.pt'
     }
     args1['dirichlet_epsilon']=0
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
@@ -92,14 +94,18 @@ for zx in range(16):
 
     
     #Code from AlphaZeroParallel
-    player = 1
     
     for first in range(-1,2,2):
+        player = 1
+        flagy = True
         win = 0
         lose = 0
         spGames = [ SPG(game) for spg in range(100)]
         while len(spGames) > 0:
             if player==first:
+                if(flagy==True): 
+                    print('random first'); 
+                    flagy=False
                 for i in range(len(spGames))[::-1]:
                     spg = spGames[i]
                     if(numpy.sum(game.get_valid_moves(spg.state))==0): print('da hec',i)
@@ -133,6 +139,9 @@ for zx in range(16):
                         del spGames[i]
                 player = game.get_opponent(player)
                 continue
+            if(flagy==True): 
+                print('AI first')
+                flagy=False
             states = numpy.stack([spg.state for spg in spGames])
             neutral_states = game.change_perspective(states, player)
             mcts1.search(neutral_states, spGames)

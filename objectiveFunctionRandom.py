@@ -18,9 +18,9 @@ class SPG():
 
 
 # arg must have directory for each Bayesian iteration
-def objFunction(game, args1, victoryCutoff):
+def objFunction(game, args1, victoryCutoff,device=torch.device("cpu")):
     
-    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+    # device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     # AlphaZeroTest:
     
     # model = ResNet.ResNet(game, args['num_resBlocks'], args['num_hidden'], device)
@@ -54,7 +54,7 @@ def objFunction(game, args1, victoryCutoff):
             win = 0
             lose = 0
             player = 1
-            spGames = [ SPG(game) for spg in range(100)]
+            spGames = [ SPG(game) for spg in range(1000)]
             while len(spGames) > 0:
                 # first==-1, random goes 2nd, first==1, random goes 1st
                 if player==first:
@@ -143,6 +143,50 @@ def objFunction(game, args1, victoryCutoff):
                 totalwin = totalwin + win
                 totallose = totallose + lose
         print()
+        
+        # #DELETE
+        
+          
+
+        # for first in range(-1,2,2):
+        #     player = 1
+        #     spGames = [ SPG(game) for spg in range(1000)]
+        #     while len(spGames) > 0:
+        #         if player==first:       #RANDOM
+        #             for i in range(len(spGames))[::-1]:
+        #                 spg = spGames[i]
+        #                 valid_moves = game.get_valid_moves(spg.state)
+        #                 action = rp.action(valid_moves)
+        #                 spg.state = game.get_next_state(spg.state, action, player)
+        #                 value, is_terminal = game.get_value_and_terminate(spg.state, action)
+        #                 if is_terminal:
+        #                     if player==1: win = win+1
+        #                     else: lose = lose+1
+        #                     del spGames[i]
+        #             player = game.get_opponent(player)
+        #             continue
+        #         #AI
+        #         states = numpy.stack([spg.state for spg in spGames])
+        #         neutral_states = game.change_perspective(states, player)
+        #         mcts1.search(neutral_states, spGames)
+        #         for i in range(len(spGames))[::-1]:
+        #             spg = spGames[i]
+        #             action_probs = numpy.zeros(game.action_size)
+        #             for child in spg.root.children:
+        #                 action_probs[child.action_taken] = child.visit_count
+        #             action_probs /= numpy.sum(action_probs)
+        #             temperature_action_probs = action_probs ** (1 / args1['temperature'])
+        #             action = numpy.argmax(temperature_action_probs)
+        #             spg.state = game.get_next_state(spg.state, action, player)
+        #             value, is_terminal = game.get_value_and_terminate(spg.state, action)
+        #             if is_terminal:
+        #                 if value==1:
+        #                     if player!=first: win = win+1
+        #                     else: lose = lose+1
+        #                 del spGames[i]
+        #         player = game.get_opponent(player)
+        # #DELETE
+        
     ratio = totalwin/(totalwin+totallose)
     print(totalwin, totalwin+totallose, ratio)
     return ratio

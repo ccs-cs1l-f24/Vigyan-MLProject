@@ -44,31 +44,31 @@ valid_cycles = [
     [5,2,3,4]
 ]
 
-# game = Cycles.Cycles(adj_matrix=adj_matrix, valid_cycles=valid_cycles)
-game = ConnectFour.ConnectFour()
+game = Cycles.Cycles(adj_matrix=adj_matrix, valid_cycles=valid_cycles)
+# game = ConnectFour.ConnectFour()
 player = 1
 for zx in range(16):
-    # if zx != 4 and zx != 8 and zx != 16 and zx != 31 :
-    #     continue
+    if(zx!=15): continue
     args1 = {
-        'lr':0.002,
-        'weight_decay':0.0001,
-        'num_resBlocks': 9,
-        'num_hidden': 58,
-        'C' : 2.7265064418315887,
-        'num_searches': 44,
+        'lr':0.14653052592277527,
+        'weight_decay':0.060361624289155015,
+        'num_resBlocks': 6,
+        'num_hidden': 88,
+        'C' : 4.1289102435112,
+        'num_searches': 125,
         'num_iterations': 16,
-        'num_selfPlay_iterations': 973,
-        'num_epochs': 6,
-        'batch_size': 37,
-        'temperature' : 3.9412047266960144,
-        'dirichlet_epsilon': 0.238503098487854,
-        'dirichlet_alpha': 0.05893164873123169,
+        'num_selfPlay_iterations': 734,
+        'num_epochs': 3,
+        'batch_size': 30,
+        'temperature' : 1.7032934427261353,
+        'dirichlet_epsilon': 0.2207707166671753,
+        'dirichlet_alpha': 0.13379442691802979,
         'num_parallel_games': 128,
         'check_ai':True,
-        'directory': "./Data/BayesianModels/36",
-        'trained_model': './Data/Manual/C/model_'+str(zx)+f'_{game}_ResNetCycles.pt'
+        'directory': "./Data/BayesianModels/55",
+        'trained_model': './Data/BayesianModels/55/model_'+str(zx)+f'_{game}_ResNetCycles.pt'
     }
+    args1['dirichlet_epsilon']=0
 
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
@@ -85,7 +85,7 @@ for zx in range(16):
     win = 0
     lose = 0
 
-    for z in range(1):
+    for z in range(200):
    #     if z%100==0:
    #         print(z)
         state = game.get_intial_state()
@@ -94,7 +94,8 @@ for zx in range(16):
             # print(state)
             # print()
             
-            if player==1:
+            if player==-1:
+                print('rand')
                 policy, _ = model1(
                     torch.tensor(game.get_encoded_state(state),device=device).unsqueeze(0)
                 )
@@ -102,16 +103,17 @@ for zx in range(16):
                 valid_moves = game.get_valid_moves(state)
                 # print(valid_moves)
                 
-                rp = RandomPlayer.RandomPlayer()
+                # rp = RandomPlayer.RandomPlayer()
                 
-                # action = int(input(f"{player}:"))
-                action = rp.action(valid_moves)
+                action = int(input(f"{player}:"))
+                # action = rp.action(valid_moves)
                 
 
                 if valid_moves[action]==0:
                     print("not valid idot")
                     continue
             else:
+                print('AI')
                 #Monty
                 neutral_state = game.change_perspective(state, player)
                 policy, _ = model1(
@@ -122,6 +124,9 @@ for zx in range(16):
                 #choosing the largest prob action
                 action = numpy.argmax(mcts_probs)
             print(action, " taken")
+            row = action//game.column_count
+            column = action%game.column_count
+            print('[',row,', ',column,']')
             state = game.get_next_state(state,action,player)
             print(state)
             value, is_terminal = game.get_value_and_terminate(state,action)
@@ -144,6 +149,7 @@ for zx in range(16):
                 break
 
             player = game.get_opponent(player)
+        if(lose==1): break
     print("win1: ", win, " lose: ", lose )
     # f = open("WLfiles/Cycles_ResNetCycles.txt", "a")
     # f.write(str(win)+", "+str(lose)+"\n")
