@@ -1,5 +1,6 @@
 import Cycles
 import MCTSParallel
+import MCTSParallelRandom
 import numpy
 import ResNet
 import random
@@ -9,12 +10,15 @@ import torch.nn.functional
 from tqdm import trange
 
 class AlphaZeroParallel:
-    def __init__(self, model, optimizer, game: Cycles.Cycles, args, scheduler):
+    def __init__(self, model, optimizer, game: Cycles.Cycles, args, scheduler, random=False):
         self.model = model
         self.optimizer = optimizer
         self.game = game
         self.args = args
-        self.mcts = MCTSParallel.MCTSParallel(game, args, model)
+        if(random):
+            self.mcts = MCTSParallelRandom.MCTSParallelRandom(game, args, model)
+        else:
+            self.mcts = MCTSParallel.MCTSParallel(game, args, model)
         self.scheduler = scheduler
         
     def selfPlay(self):

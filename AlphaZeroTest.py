@@ -57,23 +57,26 @@ device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 # args = {'lr': 0.9721780825912952, 'weight_decay': 0.1823386658537388, 'num_resBlocks': 11, 'num_hidden': 96, 'C': 3.9406969249248505, 'num_searches': 76, 'num_selfPlay_iterations': 666, 'num_epochs': 1, 'batch_size': 22, 'temperature': 5.730639934539795, 'dirichlet_epsilon': 0.055349528789520264, 'dirichlet_alpha': 0.7023180723190308, 'num_iterations': 16, 'num_parallel_games': 256, 'check_ai': True, 'directory': './Data/Manual/B'}
 
 # args:  [0.04198784477710724, 0.57606262717247, 9, 58, 2.7265064418315887, 44, 973, 6, 37, 3.9412047266960144, 0.238503098487854, 0.05893164873123169]
+
+#index55 97%
+#[0.14653052592277527, 0.060361624289155015, 6, 88, 4.1289102435112, 125, 734, 3, 30, 1.7032934427261353, 0.2207707166671753, 0.13379442691802979]
 args = {
-    'lr':0.002,
-    'weight_decay':0.0001,
-    'num_resBlocks': 9,
-    'num_hidden': 58,
-    'C' : 2.7265064418315887,
-    'num_searches': 44,
+    'lr':0.14653052592277527,
+    'weight_decay':0.060361624289155015,
+    'num_resBlocks': 6,
+    'num_hidden': 88,
+    'C' : 4.1289102435112,
+    'num_searches': 125,
     'num_iterations': 16,
-    'num_selfPlay_iterations': 973,
-    'num_epochs': 6,
-    'batch_size': 37,
-    'temperature' : 3.9412047266960144,
-    'dirichlet_epsilon': 0.238503098487854,
-    'dirichlet_alpha': 0.05893164873123169,
+    'num_selfPlay_iterations': 734,
+    'num_epochs': 3,
+    'batch_size': 30,
+    'temperature' : 1.7032934427261353,
+    'dirichlet_epsilon': 0.2207707166671753,
+    'dirichlet_alpha': 0.13379442691802979,
     'num_parallel_games': 128,
     'check_ai':True,
-    'directory': "./Data/Manual/D"
+    'directory': "./Data/Manual/B"
     # 'directory': "/Users/vigyansahai/Code/AlphaZeroCopy/Data/C"
 }
 
@@ -87,7 +90,7 @@ optimizer = torch.optim.AdamW(model.parameters(), lr=args['lr'], weight_decay=ar
 # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[6,11,14], gamma=0.1, )
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,T_max=16)
 #alpha = AlphaZero.AlphaZero(model, optimizer, game, args)
-alpha = AlphaZeroParallel.AlphaZeroParallel(model, optimizer, game, args, scheduler)
+alpha = AlphaZeroParallel.AlphaZeroParallel(model, optimizer, game, args, scheduler, random=True)
 # alpha = AlphaZeroParallel.AlphaZeroParallel(model, optimizer, game, args, scheduler)
 
 alpha.learn()

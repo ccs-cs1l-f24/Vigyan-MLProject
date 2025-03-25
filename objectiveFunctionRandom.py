@@ -30,7 +30,7 @@ def objFunction(game, args1, victoryCutoff,device=torch.device("cpu")):
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=args1['lr'], weight_decay=args1['weight_decay'])
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,T_max=args1['num_iterations'])
-    alpha = AlphaZeroParallel.AlphaZeroParallel(model, optimizer, game, args1, scheduler)
+    alpha = AlphaZeroParallel.AlphaZeroParallel(model, optimizer, game, args1, scheduler,random=True)
     alpha.learn()
     
     # Done with generating the models, we now chech each one

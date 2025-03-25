@@ -1,6 +1,7 @@
 import Cycles
 import MCTS
 import MCTSParallel
+import MCTSParallelRandom
 import AlphaZeroParallel
 import numpy
 import ResNet
@@ -10,6 +11,7 @@ import torch
 import RandomPlayer
 import LineCycleMaker
 import ConnectFour
+import pickle
 
 class SPG():
     def __init__(self, game):
@@ -53,6 +55,19 @@ valid_cycles = [
     [5,2,3,4]
 ]
 
+f = open("./Data/BayesianSave/save.txt", "rb")
+data = pickle.load(f)
+f.close()
+unscaledArgs = data[0]
+valuesArgs = data[1]
+bestValue = data[2]
+bestArgs = data[3]
+bestIndex = data[4]
+
+print('best Args:',bestArgs)
+print('best Value:',bestValue)
+print('index',bestIndex)
+
 game = Cycles.Cycles(adj_matrix=adj_matrix, valid_cycles=valid_cycles)
 # game = ConnectFour.ConnectFour()
 player = 1
@@ -60,6 +75,8 @@ for zx in range(16):
     # if(zx!=15): continue
     # index 55
     #[0.14653052592277527, 0.060361624289155015, 6, 88, 4.1289102435112, 125, 734, 3, 30, 1.7032934427261353, 0.2207707166671753, 0.13379442691802979]
+    #best Args: [0.17831012549006348, 0.06814283855740606, 10, 97, 1.7073375876688646, 91, 914, 2, 47, 6.890213918474457, 0.6914332406429372, 0.37384641938285845]
+    # index 69
     args1 = {
         'lr':0.14653052592277527,
         'weight_decay':0.060361624289155015,
@@ -76,7 +93,7 @@ for zx in range(16):
         'dirichlet_alpha': 0.13379442691802979,
         'num_parallel_games': 128,
         'check_ai':True,
-        'directory': "./Data/BayesianModels/55",
+        'directory': "./Data/Manual/A",
         'trained_model': './Data/BayesianModels/55/model_'+str(zx)+f'_{game}_ResNetCycles.pt'
     }
     args1['dirichlet_epsilon']=0
@@ -91,8 +108,9 @@ for zx in range(16):
     model1.eval()
 
     mcts1 = MCTSParallel.MCTSParallel(game,args1,model1)
+    # mcts1 = MCTSParallelRandom.MCTSParallelRandom(game,args1,model1)
 
-    
+     
     #Code from AlphaZeroParallel
     
     for first in range(-1,2,2):
@@ -124,18 +142,10 @@ for zx in range(16):
                         # print('killed',i)
                         # numpy.set_printoptions(linewidth=numpy.nan)
                         # print(state)
-                        if value==1:
-                            # print(player,"won")
-                            if player==1:
-                                win = win+1
-                            else:
-                                lose = lose+1
+                        if player==1:
+                            win = win+1
                         else:
-                            # print(player,"won")
-                            if player==1:
-                                win = win+1
-                            else:
-                                lose = lose+1
+                            lose = lose+1
                         del spGames[i]
                 player = game.get_opponent(player)
                 continue
@@ -175,23 +185,38 @@ for zx in range(16):
                     # print('AIkilled',i)
                     # numpy.set_printoptions(linewidth=numpy.nan)
                     # print(state)
-                    if value==1:
-                        # print(player,"won")
-                        if player!=first:
-                            win = win+1
-                        else:
-                            lose = lose+1
+                    if player==1:
+                        win = win+1
                     else:
-                        # print(player,"won")
-                        if player!=first:
-                            win = win+1
-                        else:
-                            lose = lose+1
+                        lose = lose+1
                     del spGames[i]
             player = game.get_opponent(player)
-        print("win1: ", win, " lose: ", lose )
+        if(first==-1):
+            print("AIwin: ", win, " lose: ", lose )
+        else:
+            print("AIwin: ", lose, " lose: ", win )
     print()
         
         
         
 
+# args1 = {
+#         'lr':0.17831012549006348,
+#         'weight_decay':0.06814283855740606,
+#         'num_resBlocks': 10,
+#         'num_hidden': 97,
+#         'C' : 1.7073375876688646,
+#         'num_searches': 91,
+#         'num_iterations': 16,
+#         'num_selfPlay_iterations': 914,
+#         'num_epochs': 2,
+#         'batch_size': 47,
+#         'temperature' : 6.890213918474457,
+#         'dirichlet_epsilon': 0.6914332406429372,
+#         'dirichlet_alpha': 0.37384641938285845,
+#         'num_parallel_games': 128,
+#         'check_ai':True,
+#         'directory': "./Data/Manual/A",
+#         'trained_model': './Data/BayesianModels/69/model_'+str(zx)+f'_{game}_ResNetCycles.pt'
+#     }
+    

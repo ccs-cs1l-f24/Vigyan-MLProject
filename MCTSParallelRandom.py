@@ -23,15 +23,13 @@ class Node:
         # return numpy.sum(self.expandable_moves) ==0 and len(self.children) >0
         return len(self.children) >0
     def select(self):
-        best_child = None
-        best_ucb = -numpy.inf
+        childUCB = numpy.zeros(len(self.children))
         
-        for child in self.children:
-            ucb = self.get_ucb(child)
-            if ucb > best_ucb:
-                best_ucb = ucb
-                best_child = child
-        return best_child
+        for i,child in enumerate(self.children):
+            childUCB[i] = self.get_ucb(child)
+        childUCB/=numpy.sum(childUCB)
+        return self.children[numpy.random.choice(len(childUCB),1,p=childUCB)[0]]
+        
     
     def get_ucb(self, child):
         if(child.visit_count==0):
@@ -86,7 +84,7 @@ class Node:
             
         
 
-class MCTSParallel:
+class MCTSParallelRandom:
     def __init__(self, game, args, model):
         self.game = game
         self.args = args
